@@ -1,20 +1,17 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { League_Spartan } from "next/font/google";
 import "./globals.css";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
+const leagueSpartan = League_Spartan({
   subsets: ["latin"],
-});
-
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
+  weight: ["300", "400", "500", "600", "700", "800"],
+  display: "swap",
+  variable: "--font-spartan",
 });
 
 export const metadata: Metadata = {
-  title: "Stock.io - Criar Conta",
-  description: "Crie sua conta na plataforma Stock.io",
+  title: "Stock.io - Plataforma de Gestão e Catálogo",
+  description: "Plataforma de gestão comercial e catálogo de produtos - Processo Trainee CJR 2026.2",
 };
 
 export default function RootLayout({
@@ -23,11 +20,10 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html
-      lang="pt-BR"
-      className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
-    >
-      <body className="min-h-full flex flex-col bg-[#F6F3E4]">{children}</body>
+    <html lang="pt-BR" className={`${leagueSpartan.variable} h-full antialiased`}>
+      <body className="min-h-full flex flex-col bg-[#F6F3E4] text-[#171918]">
+        {children}
+      </body>
     </html>
   );
 }

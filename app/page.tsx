@@ -3,431 +3,341 @@
 import Image from "next/image";
 import Link from "next/link";
 import { League_Spartan } from "next/font/google";
-import { useState, type FormEvent } from "react";
+import { useState } from "react";
 
 const leagueSpartan = League_Spartan({
   subsets: ["latin"],
-  weight: ["300", "400", "500", "600", "800"],
+  weight: ["300", "400", "500", "600", "700", "800"],
   display: "swap",
 });
 
-interface FormErrors {
+interface UserProfile {
   name?: string;
-  username?: string;
   email?: string;
-  password?: string;
-  confirmPassword?: string;
-  general?: string;
+  username?: string;
 }
 
-export default function Home() {
-  const [formData, setFormData] = useState({
-    name: "",
-    username: "",
-    email: "",
-    password: "",
-    confirmPassword: "",
+export default function HomePage() {
+  const [user, setUser] = useState<UserProfile | null>(() => {
+    if (typeof window === "undefined") return null;
+    try {
+      const token = localStorage.getItem("stockio_token");
+      const storedUser = localStorage.getItem("stockio_user");
+      if (token && storedUser) {
+        return JSON.parse(storedUser);
+      }
+    } catch {
+      // Ignora erro
+    }
+    return null;
   });
 
-  const [verSenha, setVerSenha] = useState(false);
-  const [verConfirmar, setVerConfirmar] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
-  const [errors, setErrors] = useState<FormErrors>({});
-  const [successMessage, setSuccessMessage] = useState<string | null>(null);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [selectedFilter, setSelectedFilter] = useState<"todos" | "produtos" | "lojas">("todos");
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
-    if (errors[name as keyof FormErrors]) {
-      setErrors((prev) => ({ ...prev, [name]: undefined, general: undefined }));
-    }
-  };
-
-  const validate = (): boolean => {
-    const newErrors: FormErrors = {};
-
-    if (!formData.name.trim()) {
-      newErrors.name = "O nome é obrigatório.";
-    } else if (formData.name.trim().length < 2) {
-      newErrors.name = "O nome deve ter no mínimo 2 caracteres.";
-    }
-
-    const usernameRegex = /^[a-zA-Z0-9_]+$/;
-    if (!formData.username.trim()) {
-      newErrors.username = "O username é obrigatório.";
-    } else if (formData.username.trim().length < 3) {
-      newErrors.username = "O username deve ter no mínimo 3 caracteres.";
-    } else if (!usernameRegex.test(formData.username.trim())) {
-      newErrors.username = "Use apenas letras, números e sublinhado (_).";
-    }
-
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!formData.email.trim()) {
-      newErrors.email = "O email é obrigatório.";
-    } else if (!emailRegex.test(formData.email.trim())) {
-      newErrors.email = "Formato de e-mail inválido.";
-    }
-
-    if (!formData.password) {
-      newErrors.password = "A senha é obrigatória.";
-    } else if (formData.password.length < 6) {
-      newErrors.password = "A senha deve ter no mínimo 6 caracteres.";
-    }
-
-    if (!formData.confirmPassword) {
-      newErrors.confirmPassword = "Confirme a sua senha.";
-    } else if (formData.password !== formData.confirmPassword) {
-      newErrors.confirmPassword = "As senhas não conferem.";
-    }
-
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
-  };
-
-  const handleSubmit = async (e: FormEvent) => {
-    e.preventDefault();
-    setSuccessMessage(null);
-
-    if (!validate()) {
-      return;
-    }
-
-    setIsLoading(true);
-
+  const handleLogout = () => {
     try {
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000";
-      const response = await fetch(`${apiUrl}/user`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          name: formData.name.trim(),
-          username: formData.username.trim(),
-          email: formData.email.trim(),
-          password: formData.password,
-          confirmPassword: formData.confirmPassword,
-        }),
-      });
-
-      const data = await response.json().catch(() => null);
-
-      if (!response.ok) {
-        let errorMsg = "Ocorreu um erro ao criar a conta.";
-        if (data?.message) {
-          if (Array.isArray(data.message)) {
-            errorMsg = data.message.join(", ");
-          } else {
-            errorMsg = data.message;
-          }
-        }
-        setErrors((prev) => ({ ...prev, general: errorMsg }));
-        return;
-      }
-
-      setSuccessMessage("Conta criada com sucesso! Redirecionando para o login...");
-      setFormData({
-        name: "",
-        username: "",
-        email: "",
-        password: "",
-        confirmPassword: "",
-      });
+      localStorage.removeItem("stockio_token");
+      localStorage.removeItem("stockio_user");
     } catch {
-      setErrors((prev) => ({
-        ...prev,
-        general:
-          "Não foi possível conectar ao servidor. Verifique se o backend está em execução.",
-      }));
-    } finally {
-      setIsLoading(false);
+      // noop
     }
+    setUser(null);
   };
 
-  const inputStyle =
-    "h-12 w-full rounded-full bg-[#F6F3E4] px-[34px] text-xl sm:text-2xl font-light text-[#171918] outline-none placeholder:text-[#858585] transition-all focus:ring-2 focus:ring-[#6A38F3] focus:ring-offset-2 focus:ring-offset-[#171918]";
+  // Categorias mock para navegação rápida (RF19, RF20, US12, US13)
+  const categorias = [
+    { id: 1, nome: "Tecnologia", icone: "💻" },
+    { id: 2, nome: "Moda & Vestuário", icone: "👕" },
+    { id: 3, nome: "Alimentos & Bebidas", icone: "☕" },
+    { id: 4, nome: "Papelaria & Escritório", icone: "📚" },
+    { id: 5, nome: "Serviços & Consultoria", icone: "💼" },
+  ];
+
+  // Vitrine em destaque (RF24, RF25, US10, US11)
+  const destaques = [
+    {
+      tipo: "loja",
+      titulo: "Cafeteria Central",
+      subtitulo: "Cafés especiais, grãos selecionados e lanches artesanais",
+      tag: "Loja Parceira",
+      badge: "⭐ 4.9",
+    },
+    {
+      tipo: "produto",
+      titulo: "Café Especial Torrado 250g",
+      subtitulo: "R$ 38,00 | Estoque disponível: 24 un.",
+      tag: "Mais Vendido",
+      badge: "⭐ 5.0",
+    },
+    {
+      tipo: "loja",
+      titulo: "CJR Tech Store",
+      subtitulo: "Eletrônicos, periféricos e soluções corporativas",
+      tag: "Loja Parceira",
+      badge: "⭐ 4.8",
+    },
+    {
+      tipo: "produto",
+      titulo: "Mousepad Ergonômico Gamer",
+      subtitulo: "R$ 49,90 | Estoque disponível: 15 un.",
+      tag: "Lançamento",
+      badge: "⭐ 4.7",
+    },
+  ];
 
   return (
-    <main
-      className={`${leagueSpartan.className} min-h-screen w-full bg-[#F6F3E4] flex flex-col justify-between overflow-x-hidden`}
-    >
-      {/* Cabeçalho exclusivo para Mobile e Tablet (< lg) */}
-      <header className="lg:hidden w-full flex justify-center pt-8 pb-3 px-6">
-        <Image
-          src="/LOGO%20Stock.io.png"
-          alt="Stock.io"
-          width={419}
-          height={86}
-          priority
-          className="h-auto w-[220px] sm:w-[260px] object-contain"
-        />
-      </header>
-
-      <div className="relative mx-auto flex min-h-[calc(100vh-100px)] lg:min-h-screen w-full max-w-[1440px] flex-col justify-between lg:flex-row lg:items-end px-4 sm:px-8 lg:px-12 xl:px-16">
-        {/* Lado Esquerdo / Card de Cadastro (Figma #12:246) */}
-        <section className="w-full max-w-[560px] xl:max-w-[654px] self-center lg:self-end rounded-t-[50px] sm:rounded-t-[65px] xl:rounded-t-[80px] rounded-b-[40px] lg:rounded-b-none bg-[#171918] px-6 sm:px-10 xl:px-[75px] pt-8 sm:pt-10 xl:pt-[90px] pb-6 sm:pb-8 xl:pb-12 text-[#F6F3E4] shadow-2xl transition-all">
-          <h1 className="text-center text-[34px] sm:text-[40px] xl:text-[44px] font-extrabold leading-none tracking-tight text-[#F6F3E4]">
-            CRIE SUA CONTA
-          </h1>
-
-          {/* Feedback de Erro Geral ou Sucesso */}
-          {errors.general && (
-            <div className="mt-4 rounded-2xl bg-red-500/20 border border-red-500/40 p-3 text-center text-sm font-medium text-red-200">
-              {errors.general}
-            </div>
-          )}
-
-          {successMessage && (
-            <div className="mt-4 rounded-2xl bg-emerald-500/20 border border-emerald-500/40 p-3 text-center text-sm font-medium text-emerald-200">
-              {successMessage}
-            </div>
-          )}
-
-          <form onSubmit={handleSubmit} className="mt-7 xl:mt-[45px] flex flex-col gap-[15px]">
-            {/* Campo Nome Completo */}
-            <div>
-              <input
-                id="name"
-                name="name"
-                type="text"
-                autoComplete="name"
-                placeholder="Nome Completo"
-                value={formData.name}
-                onChange={handleChange}
-                className={inputStyle}
-              />
-              {errors.name && (
-                <span className="mt-1 ml-5 block text-xs font-normal text-red-400">
-                  {errors.name}
-                </span>
-              )}
-            </div>
-
-            {/* Campo Username */}
-            <div>
-              <input
-                id="username"
-                name="username"
-                type="text"
-                autoComplete="username"
-                placeholder="Username"
-                value={formData.username}
-                onChange={handleChange}
-                className={inputStyle}
-              />
-              {errors.username && (
-                <span className="mt-1 ml-5 block text-xs font-normal text-red-400">
-                  {errors.username}
-                </span>
-              )}
-            </div>
-
-            {/* Campo Email */}
-            <div>
-              <input
-                id="email"
-                name="email"
-                type="email"
-                autoComplete="email"
-                placeholder="Email"
-                value={formData.email}
-                onChange={handleChange}
-                className={inputStyle}
-              />
-              {errors.email && (
-                <span className="mt-1 ml-5 block text-xs font-normal text-red-400">
-                  {errors.email}
-                </span>
-              )}
-            </div>
-
-            {/* Campo Senha */}
-            <div className="relative">
-              <input
-                id="password"
-                name="password"
-                type={verSenha ? "text" : "password"}
-                autoComplete="new-password"
-                placeholder="Senha"
-                value={formData.password}
-                onChange={handleChange}
-                className={`${inputStyle} pr-14`}
-              />
-              <button
-                type="button"
-                onClick={() => setVerSenha(!verSenha)}
-                aria-label={verSenha ? "Ocultar senha" : "Exibir senha"}
-                className="absolute right-4 top-1/2 -translate-y-1/2 cursor-pointer p-1 text-[#858585] hover:opacity-80 transition-opacity"
-              >
-                <svg
-                  width="26"
-                  height="26"
-                  viewBox="0 0 26 26"
-                  fill="none"
-                  xmlns="http://www.w3.org/2000/svg"
-                >
-                  <path
-                    d="M16.25 13C16.25 13.8619 15.9076 14.6886 15.2981 15.2981C14.6886 15.9076 13.8619 16.25 13 16.25C12.138 16.25 11.3114 15.9076 10.7019 15.2981C10.0924 14.6886 9.74998 13.8619 9.74998 13C9.74998 12.138 10.0924 11.3114 10.7019 10.7019C11.3114 10.0924 12.138 9.74998 13 9.74998C13.8619 9.74998 14.6886 10.0924 15.2981 10.7019C15.9076 11.3114 16.25 12.138 16.25 13Z"
-                    stroke="#858585"
-                    strokeWidth="1.2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  />
-                  <path
-                    d="M2.16672 13C3.90005 8.56158 7.94737 5.41667 13 5.41667C18.0527 5.41667 22.1 8.56158 23.8333 13C22.1 17.4384 18.0527 20.5833 13 20.5833C7.94737 20.5833 3.90005 17.4384 2.16672 13Z"
-                    stroke="#858585"
-                    strokeWidth="1.2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  />
-                  {verSenha && (
-                    <path
-                      d="M3 23L23 3"
-                      stroke="#858585"
-                      strokeWidth="1.4"
-                      strokeLinecap="round"
-                    />
-                  )}
-                </svg>
-              </button>
-              {errors.password && (
-                <span className="mt-1 ml-5 block text-xs font-normal text-red-400">
-                  {errors.password}
-                </span>
-              )}
-            </div>
-
-            {/* Campo Confirmar Senha */}
-            <div className="relative">
-              <input
-                id="confirmPassword"
-                name="confirmPassword"
-                type={verConfirmar ? "text" : "password"}
-                autoComplete="new-password"
-                placeholder="Confirmar Senha"
-                value={formData.confirmPassword}
-                onChange={handleChange}
-                className={`${inputStyle} pr-14`}
-              />
-              <button
-                type="button"
-                onClick={() => setVerConfirmar(!verConfirmar)}
-                aria-label={verConfirmar ? "Ocultar confirmação de senha" : "Exibir confirmação de senha"}
-                className="absolute right-4 top-1/2 -translate-y-1/2 cursor-pointer p-1 text-[#858585] hover:opacity-80 transition-opacity"
-              >
-                <svg
-                  width="26"
-                  height="26"
-                  viewBox="0 0 26 26"
-                  fill="none"
-                  xmlns="http://www.w3.org/2000/svg"
-                >
-                  <path
-                    d="M16.25 13C16.25 13.8619 15.9076 14.6886 15.2981 15.2981C14.6886 15.9076 13.8619 16.25 13 16.25C12.138 16.25 11.3114 15.9076 10.7019 15.2981C10.0924 14.6886 9.74998 13.8619 9.74998 13C9.74998 12.138 10.0924 11.3114 10.7019 10.7019C11.3114 10.0924 12.138 9.74998 13 9.74998C13.8619 9.74998 14.6886 10.0924 15.2981 10.7019C15.9076 11.3114 16.25 12.138 16.25 13Z"
-                    stroke="#858585"
-                    strokeWidth="1.2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  />
-                  <path
-                    d="M2.16672 13C3.90005 8.56158 7.94737 5.41667 13 5.41667C18.0527 5.41667 22.1 8.56158 23.8333 13C22.1 17.4384 18.0527 20.5833 13 20.5833C7.94737 20.5833 3.90005 17.4384 2.16672 13Z"
-                    stroke="#858585"
-                    strokeWidth="1.2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  />
-                  {verConfirmar && (
-                    <path
-                      d="M3 23L23 3"
-                      stroke="#858585"
-                      strokeWidth="1.4"
-                      strokeLinecap="round"
-                    />
-                  )}
-                </svg>
-              </button>
-              {errors.confirmPassword && (
-                <span className="mt-1 ml-5 block text-xs font-normal text-red-400">
-                  {errors.confirmPassword}
-                </span>
-              )}
-            </div>
-
-            {/* Botão de Envio (Figma #12:260) */}
-            <button
-              type="submit"
-              disabled={isLoading}
-              className="mt-3 xl:mt-4 h-[52px] w-full rounded-full bg-[#6A38F3] text-2xl font-semibold tracking-wide text-white transition-all hover:bg-[#582ad6] active:scale-[0.99] disabled:opacity-60 disabled:cursor-not-allowed flex items-center justify-center cursor-pointer shadow-lg shadow-[#6A38F3]/30"
-            >
-              {isLoading ? (
-                <div className="flex items-center gap-2">
-                  <svg
-                    className="h-5 w-5 animate-spin text-white"
-                    xmlns="http://www.w3.org/2000/svg"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                  >
-                    <circle
-                      className="opacity-25"
-                      cx="12"
-                      cy="12"
-                      r="10"
-                      stroke="currentColor"
-                      strokeWidth="4"
-                    />
-                    <path
-                      className="opacity-75"
-                      fill="currentColor"
-                      d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                    />
-                  </svg>
-                  <span>CRIANDO...</span>
-                </div>
-              ) : (
-                "CRIAR CONTA"
-              )}
-            </button>
-          </form>
-
-          {/* Link para Login (Figma #12:263) */}
-          <p className="mt-5 xl:mt-7 text-center text-xl sm:text-2xl font-light text-white">
-            Já possui uma conta?{" "}
-            <Link
-              href="/login"
-              className="font-medium text-[#6A38F3] hover:underline"
-            >
-              Login
-            </Link>
-          </p>
-        </section>
-
-        {/* Lado Direito / Logo e Mascote (Desktop - Figma #12:267 e #33:35) */}
-        <section className="hidden lg:flex flex-col items-center justify-between self-stretch pt-6 xl:pt-10 w-full max-w-[440px] xl:max-w-[500px]">
+    <div className={`${leagueSpartan.className} min-h-screen bg-[#F6F3E4] text-[#171918] flex flex-col justify-between`}>
+      {/* Navbar Superior (RF16, RF17, RF19, RF42, RF43, US11, US34, US35) */}
+      <header className="sticky top-0 z-40 w-full border-b border-[#171918]/10 bg-[#F6F3E4]/90 backdrop-blur-md">
+        <div className="mx-auto flex h-20 max-w-[1440px] items-center justify-between px-4 sm:px-8 lg:px-14">
           {/* Logo Stock.io */}
-          <div className="w-full flex justify-center px-4">
+          <Link href="/" className="flex items-center gap-2">
             <Image
               src="/LOGO%20Stock.io.png"
               alt="Stock.io"
-              width={419}
-              height={86}
+              width={220}
+              height={45}
               priority
-              className="h-auto w-[280px] xl:w-[380px] object-contain"
+              className="h-auto w-[160px] sm:w-[200px] object-contain"
             />
+          </Link>
+
+          {/* Barra de Busca (RF24) */}
+          <div className="hidden md:flex flex-1 max-w-md mx-8">
+            <div className="relative w-full">
+              <input
+                type="text"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder="Buscar lojas, produtos e categorias..."
+                className="h-11 w-full rounded-full bg-white/80 border border-[#171918]/15 px-5 pl-11 text-base outline-none transition-all focus:border-[#6A38F3] focus:ring-2 focus:ring-[#6A38F3]/20"
+              />
+              <svg
+                className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-[#858585]"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth="2"
+                  d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+                />
+              </svg>
+            </div>
           </div>
 
-          {/* Mascote StockLee */}
-          <div className="mt-auto relative w-full flex justify-center items-end">
+          {/* Ações / Autenticação */}
+          <div className="flex items-center gap-3 sm:gap-4">
+            {user ? (
+              <div className="flex items-center gap-3">
+                <div className="hidden sm:flex flex-col text-right">
+                  <span className="text-sm font-semibold text-[#171918]">
+                    {user.name || user.username || user.email}
+                  </span>
+                  <span className="text-xs text-[#858585]">{user.email}</span>
+                </div>
+                <button
+                  type="button"
+                  onClick={handleLogout}
+                  className="h-10 rounded-full border border-red-500/30 bg-red-50 px-4 text-sm font-semibold text-red-600 transition-colors hover:bg-red-100 cursor-pointer"
+                >
+                  Sair
+                </button>
+              </div>
+            ) : (
+              <div className="flex items-center gap-2 sm:gap-3">
+                <Link
+                  href="/login"
+                  className="flex h-10 items-center justify-center rounded-full px-4 sm:px-6 text-base font-semibold text-[#171918] transition-colors hover:text-[#6A38F3]"
+                >
+                  Entrar
+                </Link>
+                <Link
+                  href="/cadastro"
+                  className="flex h-10 items-center justify-center rounded-full bg-[#6A38F3] px-5 sm:px-7 text-base font-semibold text-white shadow-md shadow-[#6A38F3]/25 transition-all hover:bg-[#582ad6] active:scale-95"
+                >
+                  Cadastre-se
+                </Link>
+              </div>
+            )}
+          </div>
+        </div>
+      </header>
+
+      {/* Conteúdo Principal */}
+      <main className="mx-auto flex-1 w-full max-w-[1440px] px-4 sm:px-8 lg:px-14 py-8 sm:py-12 flex flex-col gap-12">
+        {/* Banner Hero */}
+        <section className="relative overflow-hidden rounded-[40px] bg-[#171918] p-8 sm:p-12 lg:p-16 text-[#F6F3E4] shadow-2xl flex flex-col lg:flex-row items-center justify-between gap-8">
+          <div className="max-w-2xl flex flex-col items-start gap-5">
+            <span className="inline-block rounded-full bg-[#6A38F3]/30 border border-[#6A38F3]/50 px-4 py-1.5 text-xs sm:text-sm font-semibold tracking-wide text-[#a584f9]">
+              PROCESSO TRAINEE CJR 2026.2 • GRUPO 8
+            </span>
+            <h1 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold leading-tight tracking-tight text-white">
+              Gestão de estoque e catálogo com a <span className="text-[#6A38F3]">Stock.io</span>
+            </h1>
+            <p className="text-lg sm:text-xl font-light text-[#F6F3E4]/80 leading-relaxed">
+              Explore lojas locais, descubra produtos incríveis e gerencie seu inventário de forma rápida, moderna e integrada.
+            </p>
+            <div className="mt-2 flex flex-wrap gap-4">
+              <Link
+                href="/cadastro"
+                className="h-12 flex items-center justify-center rounded-full bg-[#6A38F3] px-8 text-xl font-semibold text-white shadow-lg shadow-[#6A38F3]/40 transition-all hover:bg-[#582ad6]"
+              >
+                Comece Agora
+              </Link>
+              <Link
+                href="/login"
+                className="h-12 flex items-center justify-center rounded-full border border-white/20 bg-white/5 px-8 text-xl font-medium text-white transition-all hover:bg-white/10"
+              >
+                Acessar Minha Conta
+              </Link>
+            </div>
+          </div>
+
+          {/* Mascote no Hero */}
+          <div className="relative w-[260px] sm:w-[320px] lg:w-[380px] h-[300px] sm:h-[380px] flex items-end justify-center">
             <Image
               src="/StockLee%20-%20Mascote%20da%20Stock.io.png"
               alt="StockLee - Mascote da Stock.io"
-              width={497}
-              height={799}
+              fill
               priority
-              className="h-auto max-h-[62vh] xl:max-h-[68vh] 2xl:max-h-[74vh] w-[320px] xl:w-[440px] object-contain object-bottom select-none pointer-events-none"
+              className="object-contain object-bottom select-none"
             />
           </div>
         </section>
-      </div>
-    </main>
+
+        {/* Categorias (RF19, RF20, US12, US13) */}
+        <section aria-labelledby="categorias-heading">
+          <div className="flex items-center justify-between mb-6">
+            <h2 id="categorias-heading" className="text-2xl sm:text-3xl font-extrabold">
+              Navegue por Categorias
+            </h2>
+          </div>
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">
+            {categorias.map((cat) => (
+              <div
+                key={cat.id}
+                className="flex flex-col items-center justify-center p-6 rounded-3xl bg-white/70 border border-[#171918]/10 hover:border-[#6A38F3]/50 hover:shadow-lg transition-all cursor-pointer group"
+              >
+                <span className="text-4xl mb-3 group-hover:scale-110 transition-transform">
+                  {cat.icone}
+                </span>
+                <span className="text-base font-semibold text-center group-hover:text-[#6A38F3] transition-colors">
+                  {cat.nome}
+                </span>
+              </div>
+            ))}
+          </div>
+        </section>
+
+        {/* Vitrine / Carrossel em Destaque (RF24, RF25, US10) */}
+        <section aria-labelledby="destaques-heading">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+            <div>
+              <h2 id="destaques-heading" className="text-2xl sm:text-3xl font-extrabold">
+                Vitrine e Lojas em Destaque
+              </h2>
+              <p className="text-sm sm:text-base font-light text-[#858585]">
+                Itens e estabelecimentos avaliados pela nossa comunidade
+              </p>
+            </div>
+
+            {/* Filtros rápidos (RF25, RF29) */}
+            <div className="flex items-center gap-2 bg-white/70 p-1.5 rounded-full border border-[#171918]/10 self-start sm:self-auto">
+              <button
+                type="button"
+                onClick={() => setSelectedFilter("todos")}
+                className={`rounded-full px-4 py-1 text-sm font-semibold transition-colors cursor-pointer ${
+                  selectedFilter === "todos"
+                    ? "bg-[#6A38F3] text-white"
+                    : "text-[#171918] hover:text-[#6A38F3]"
+                }`}
+              >
+                Todos
+              </button>
+              <button
+                type="button"
+                onClick={() => setSelectedFilter("lojas")}
+                className={`rounded-full px-4 py-1 text-sm font-semibold transition-colors cursor-pointer ${
+                  selectedFilter === "lojas"
+                    ? "bg-[#6A38F3] text-white"
+                    : "text-[#171918] hover:text-[#6A38F3]"
+                }`}
+              >
+                Lojas
+              </button>
+              <button
+                type="button"
+                onClick={() => setSelectedFilter("produtos")}
+                className={`rounded-full px-4 py-1 text-sm font-semibold transition-colors cursor-pointer ${
+                  selectedFilter === "produtos"
+                    ? "bg-[#6A38F3] text-white"
+                    : "text-[#171918] hover:text-[#6A38F3]"
+                }`}
+              >
+                Produtos
+              </button>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+            {destaques
+              .filter(
+                (item) =>
+                  selectedFilter === "todos" ||
+                  (selectedFilter === "lojas" && item.tipo === "loja") ||
+                  (selectedFilter === "produtos" && item.tipo === "produto"),
+              )
+              .map((item, index) => (
+                <div
+                  key={index}
+                  className="flex flex-col justify-between rounded-3xl bg-white p-6 border border-[#171918]/10 shadow-sm hover:shadow-xl transition-all"
+                >
+                  <div>
+                    <div className="flex items-center justify-between mb-3">
+                      <span className="rounded-full bg-[#6A38F3]/10 px-3 py-1 text-xs font-semibold text-[#6A38F3]">
+                        {item.tag}
+                      </span>
+                      <span className="text-sm font-bold text-amber-500">
+                        {item.badge}
+                      </span>
+                    </div>
+                    <h3 className="text-xl font-bold mb-2">{item.titulo}</h3>
+                    <p className="text-sm font-light text-[#858585] leading-relaxed">
+                      {item.subtitulo}
+                    </p>
+                  </div>
+                  <div className="mt-6 pt-4 border-t border-[#171918]/5">
+                    <Link
+                      href={item.tipo === "loja" ? "/cadastro" : "/login"}
+                      className="text-sm font-semibold text-[#6A38F3] hover:underline"
+                    >
+                      {item.tipo === "loja" ? "Ver detalhes da loja →" : "Ver produto →"}
+                    </Link>
+                  </div>
+                </div>
+              ))}
+          </div>
+        </section>
+      </main>
+
+      {/* Rodapé */}
+      <footer className="w-full border-t border-[#171918]/10 bg-white/40 py-8 px-4 sm:px-8 lg:px-14 mt-12">
+        <div className="mx-auto max-w-[1440px] flex flex-col sm:flex-row items-center justify-between gap-4 text-center sm:text-left text-sm text-[#858585]">
+          <p>© 2026 Stock.io - CJR Consultoria Júnior (Processo Trainee 2026.2 - Grupo 8)</p>
+          <div className="flex items-center gap-6">
+            <Link href="/cadastro" className="hover:text-[#171918] transition-colors">
+              Cadastro
+            </Link>
+            <Link href="/login" className="hover:text-[#171918] transition-colors">
+              Login
+            </Link>
+          </div>
+        </div>
+      </footer>
+    </div>
   );
 }
