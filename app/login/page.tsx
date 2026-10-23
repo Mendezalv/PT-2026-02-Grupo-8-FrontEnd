@@ -27,7 +27,6 @@ export default function LoginPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [errors, setErrors] = useState<LoginErrors>({});
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
-  const [showForgotModal, setShowForgotModal] = useState(false);
 
   const validate = (): boolean => {
     const newErrors: LoginErrors = {};
@@ -89,7 +88,6 @@ export default function LoginPage() {
       }
 
       if (data?.access_token) {
-        // Armazenamento seguro de sessão do usuário no navegador
         try {
           localStorage.setItem("stockio_token", data.access_token);
           if (data.user) {
@@ -101,14 +99,14 @@ export default function LoginPage() {
             );
           }
         } catch {
-          // Fallback para caso localStorage esteja bloqueado
+          // Fallback caso localStorage esteja bloqueado
         }
       }
 
       setSuccessMessage("Login efetuado com sucesso! Redirecionando...");
       setTimeout(() => {
         router.push("/");
-      }, 1000);
+      }, 1200);
     } catch {
       setErrors({
         general:
@@ -124,10 +122,10 @@ export default function LoginPage() {
 
   return (
     <main
-      className={`${leagueSpartan.className} min-h-screen w-full bg-[#F6F3E4] flex flex-col justify-between overflow-x-hidden`}
+      className={`${leagueSpartan.className} min-h-screen w-full bg-[#F6F3E4] flex flex-col justify-between py-6 sm:py-8 lg:py-0`}
     >
-      {/* Cabeçalho exclusivo para Mobile e Tablet (< lg) */}
-      <header className="lg:hidden w-full flex justify-center pt-8 pb-3 px-6">
+      {/* Cabeçalho para Mobile e Tablet (< lg) */}
+      <header className="lg:hidden w-full flex justify-center pb-4 px-6">
         <Link href="/">
           <Image
             src="/LOGO%20Stock.io.png"
@@ -135,14 +133,14 @@ export default function LoginPage() {
             width={320}
             height={64}
             priority
-            className="h-auto w-[220px] sm:w-[280px] object-contain"
+            className="h-auto w-[200px] sm:w-[260px] object-contain hover:opacity-90 transition-opacity"
           />
         </Link>
       </header>
 
-      {/* Conteúdo Principal Centralizado */}
-      <div className="relative mx-auto flex-1 w-full max-w-[1440px] px-4 sm:px-8 lg:px-14 flex flex-col lg:flex-row items-center lg:items-end justify-center lg:justify-between gap-6 pb-0">
-        {/* Lado Esquerdo no Desktop: Logo e Mascote 2 */}
+      {/* Conteúdo Principal */}
+      <div className="relative mx-auto flex-1 w-full max-w-[1440px] px-4 sm:px-8 lg:px-12 xl:px-16 flex flex-col lg:flex-row items-center lg:items-end justify-between gap-8 pb-4 lg:pb-0">
+        {/* Lado Esquerdo no Desktop: Logo e Mascote 2 (Figma #2:2) */}
         <section className="hidden lg:flex flex-col items-center justify-between self-stretch pt-6 xl:pt-10 w-full max-w-[440px] xl:max-w-[500px]">
           {/* Logo Stock.io */}
           <div className="w-full flex justify-center px-4">
@@ -166,19 +164,19 @@ export default function LoginPage() {
               width={497}
               height={660}
               priority
-              className="h-auto max-h-[62vh] xl:max-h-[68vh] 2xl:max-h-[74vh] w-[320px] xl:w-[440px] object-contain object-bottom select-none pointer-events-none"
+              className="h-auto max-h-[58vh] xl:max-h-[66vh] 2xl:max-h-[72vh] w-[300px] xl:w-[420px] object-contain object-bottom select-none pointer-events-none"
             />
           </div>
         </section>
 
-        {/* Lado Direito: Card de Login Escuro */}
+        {/* Lado Direito: Card de Login Escuro (Figma #12:155) */}
         <section
           aria-labelledby="login-heading"
-          className="w-full max-w-[654px] rounded-t-[50px] sm:rounded-t-[80px] bg-[#171918] px-6 sm:px-12 xl:px-[75px] pt-8 sm:pt-14 pb-8 text-[#F6F3E4] shadow-2xl flex flex-col justify-center transition-all duration-300"
+          className="w-full max-w-[560px] xl:max-w-[654px] rounded-t-[50px] sm:rounded-t-[80px] rounded-b-[40px] lg:rounded-b-none bg-[#171918] px-6 sm:px-12 xl:px-[75px] pt-8 sm:pt-12 xl:pt-14 pb-8 sm:pb-10 xl:pb-12 text-[#F6F3E4] shadow-2xl flex flex-col justify-center transition-all my-auto lg:my-0"
         >
           <h1
             id="login-heading"
-            className="text-center text-3xl sm:text-4xl xl:text-[42px] font-extrabold leading-none tracking-tight text-white"
+            className="text-center text-3xl sm:text-4xl xl:text-[44px] font-extrabold leading-none tracking-tight text-white"
           >
             BEM VINDO DE VOLTA!
           </h1>
@@ -187,7 +185,7 @@ export default function LoginPage() {
           {errors.general && (
             <div
               role="alert"
-              className="mt-4 rounded-xl bg-red-500/15 border border-red-500/40 p-3.5 text-center text-sm font-medium text-red-300 animate-fadeIn"
+              className="mt-4 rounded-xl bg-red-500/15 border border-red-500/40 p-3 text-center text-sm font-medium text-red-300"
             >
               {errors.general}
             </div>
@@ -196,7 +194,7 @@ export default function LoginPage() {
           {successMessage && (
             <div
               role="status"
-              className="mt-4 rounded-xl bg-emerald-500/15 border border-emerald-500/40 p-3.5 text-center text-sm font-medium text-emerald-300 animate-fadeIn"
+              className="mt-4 rounded-xl bg-emerald-500/15 border border-emerald-500/40 p-3 text-center text-sm font-medium text-emerald-300"
             >
               {successMessage}
             </div>
@@ -205,7 +203,7 @@ export default function LoginPage() {
           <form
             onSubmit={handleSubmit}
             noValidate
-            className="mt-8 flex flex-col gap-4 xl:gap-[18px]"
+            className="mt-7 sm:mt-8 flex flex-col gap-4 xl:gap-[18px]"
           >
             {/* Campo E-mail */}
             <div>
@@ -216,13 +214,16 @@ export default function LoginPage() {
                 onChange={(e) => {
                   setEmail(e.target.value);
                   if (errors.email || errors.general) {
-                    setErrors((prev) => ({ ...prev, email: undefined, general: undefined }));
+                    setErrors((prev) => ({
+                      ...prev,
+                      email: undefined,
+                      general: undefined,
+                    }));
                   }
                 }}
                 placeholder="Email"
                 disabled={isLoading}
                 aria-label="Email de acesso"
-                aria-invalid={!!errors.email}
                 className={inputStyle}
               />
               {errors.email && (
@@ -232,7 +233,7 @@ export default function LoginPage() {
               )}
             </div>
 
-            {/* Campo Senha com Toggle */}
+            {/* Campo Senha com Toggle Oficial iconamoon:eye-thin */}
             <div className="relative">
               <input
                 type={verSenha ? "text" : "password"}
@@ -241,13 +242,16 @@ export default function LoginPage() {
                 onChange={(e) => {
                   setPassword(e.target.value);
                   if (errors.password || errors.general) {
-                    setErrors((prev) => ({ ...prev, password: undefined, general: undefined }));
+                    setErrors((prev) => ({
+                      ...prev,
+                      password: undefined,
+                      general: undefined,
+                    }));
                   }
                 }}
                 placeholder="Senha"
                 disabled={isLoading}
                 aria-label="Senha"
-                aria-invalid={!!errors.password}
                 className={`${inputStyle} pr-14`}
               />
               <button
@@ -294,22 +298,19 @@ export default function LoginPage() {
               )}
             </div>
 
-            {/* Link Esqueceu sua senha? */}
-            <div className="flex justify-center">
-              <button
-                type="button"
-                onClick={() => setShowForgotModal(true)}
-                className="text-base sm:text-lg font-light text-[#F6F3E4]/80 underline-offset-4 hover:underline hover:text-white transition-colors cursor-pointer"
-              >
-                Esqueceu sua senha?
-              </button>
-            </div>
+            {/* Link Esqueceu sua senha? (Figma #12:149) */}
+            <Link
+              href="/recuperar-senha"
+              className="self-center text-lg sm:text-xl font-light text-white underline underline-offset-4 hover:text-[#6A38F3] transition-colors"
+            >
+              Esqueceu sua senha?
+            </Link>
 
-            {/* Botão Entrar */}
+            {/* Botão de Entrar (Figma #12:136) */}
             <button
               type="submit"
               disabled={isLoading}
-              className="mt-2 sm:mt-3 h-[52px] w-full rounded-full bg-[#6A38F3] text-2xl font-semibold tracking-wide text-white transition-all hover:bg-[#582ad6] active:scale-[0.99] disabled:opacity-60 disabled:cursor-not-allowed flex items-center justify-center cursor-pointer shadow-lg shadow-[#6A38F3]/30"
+              className="mt-2 h-[52px] w-full rounded-full bg-[#6A38F3] text-2xl font-semibold tracking-wide text-white transition-all hover:bg-[#582ad6] active:scale-[0.99] disabled:opacity-60 disabled:cursor-not-allowed flex items-center justify-center cursor-pointer shadow-lg shadow-[#6A38F3]/30"
             >
               {isLoading ? (
                 <div className="flex items-center gap-2">
@@ -341,7 +342,7 @@ export default function LoginPage() {
             </button>
           </form>
 
-          {/* Link para Cadastro */}
+          {/* Link para Cadastro (Figma #12:137) */}
           <p className="mt-6 text-center text-xl sm:text-2xl font-light text-white">
             Não possui uma conta?{" "}
             <Link
@@ -353,32 +354,6 @@ export default function LoginPage() {
           </p>
         </section>
       </div>
-
-      {/* Modal de Esqueceu a Senha (RF14 / Ciclo 4) */}
-      {showForgotModal && (
-        <div
-          role="dialog"
-          aria-modal="true"
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 px-4 backdrop-blur-sm animate-fadeIn"
-        >
-          <div className="w-full max-w-md rounded-3xl bg-[#171918] border border-[#6A38F3]/40 p-6 text-center shadow-2xl text-[#F6F3E4]">
-            <h3 className="text-2xl font-bold text-white">Recuperação de Senha</h3>
-            <p className="mt-3 text-base font-light text-[#F6F3E4]/80 leading-relaxed">
-              A funcionalidade de redefinição de senha está planejada para a próxima etapa (Ciclo 4) do Processo Trainee.
-            </p>
-            <p className="mt-2 text-sm text-[#858585]">
-              Caso necessite de redefinição emergencial, contate a coordenação ou o administrador do sistema.
-            </p>
-            <button
-              type="button"
-              onClick={() => setShowForgotModal(false)}
-              className="mt-6 h-11 w-full rounded-full bg-[#6A38F3] text-lg font-semibold text-white hover:bg-[#582ad6] transition-colors cursor-pointer"
-            >
-              Entendido
-            </button>
-          </div>
-        </div>
-      )}
     </main>
   );
 }
