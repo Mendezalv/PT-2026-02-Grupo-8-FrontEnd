@@ -4,7 +4,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { League_Spartan } from "next/font/google";
-import { useState, type FormEvent } from "react";
+import { useState, useEffect, type FormEvent } from "react";
 
 const leagueSpartan = League_Spartan({
   subsets: ["latin"],
@@ -38,12 +38,26 @@ export default function CadastroPage() {
   const [errors, setErrors] = useState<FormErrors>({});
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
+  // Auto-dismiss do erro geral após 5 segundos
+  useEffect(() => {
+    if (errors.general) {
+      const timer = setTimeout(() => {
+        setErrors((prev) => ({ ...prev, general: undefined }));
+      }, 5000);
+      return () => clearTimeout(timer);
+    }
+  }, [errors.general]);
+
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
-    if (errors[name as keyof FormErrors]) {
-      setErrors((prev) => ({ ...prev, [name]: undefined, general: undefined }));
-    }
+    // Limpa o erro do campo e qualquer erro geral ao digitar
+    setErrors((prev) => {
+      if (prev[name as keyof FormErrors] || prev.general) {
+        return { ...prev, [name]: undefined, general: undefined };
+      }
+      return prev;
+    });
   };
 
   const validate = (): boolean => {
@@ -138,8 +152,8 @@ export default function CadastroPage() {
       });
 
       setTimeout(() => {
-        router.push("/login");
-      }, 1500);
+        router.replace("/login?cadastrado=true");
+      }, 1000);
     } catch {
       setErrors((prev) => ({
         ...prev,
@@ -190,18 +204,34 @@ export default function CadastroPage() {
           {errors.general && (
             <div
               role="alert"
-              className="mt-4 rounded-xl bg-red-500/15 border border-red-500/40 p-3 text-center text-sm font-medium text-red-300"
+              className="mt-4 flex items-center justify-between rounded-xl bg-red-500/15 border border-red-500/40 px-4 py-2.5 text-sm font-medium text-red-300"
             >
-              {errors.general}
+              <span>{errors.general}</span>
+              <button
+                type="button"
+                onClick={() => setErrors((prev) => ({ ...prev, general: undefined }))}
+                aria-label="Fechar aviso"
+                className="ml-2 text-red-300/80 hover:text-white transition-colors cursor-pointer text-xs"
+              >
+                ✕
+              </button>
             </div>
           )}
 
           {successMessage && (
             <div
               role="status"
-              className="mt-4 rounded-xl bg-emerald-500/15 border border-emerald-500/40 p-3 text-center text-sm font-medium text-emerald-300"
+              className="mt-4 flex items-center justify-between rounded-xl bg-emerald-500/15 border border-emerald-500/40 px-4 py-2.5 text-sm font-medium text-emerald-300"
             >
-              {successMessage}
+              <span>{successMessage}</span>
+              <button
+                type="button"
+                onClick={() => setSuccessMessage(null)}
+                aria-label="Fechar mensagem"
+                className="ml-2 text-emerald-300/80 hover:text-white transition-colors cursor-pointer text-xs"
+              >
+                ✕
+              </button>
             </div>
           )}
 
