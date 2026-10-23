@@ -120,7 +120,7 @@ export default function CadastroPage() {
         if (data?.message) {
           if (Array.isArray(data.message)) {
             errorMsg = data.message.join(", ");
-          } else {
+          } else if (typeof data.message === "string") {
             errorMsg = data.message;
           }
         }
@@ -156,10 +156,10 @@ export default function CadastroPage() {
 
   return (
     <main
-      className={`${leagueSpartan.className} min-h-screen w-full bg-[#F6F3E4] flex flex-col justify-between overflow-x-hidden`}
+      className={`${leagueSpartan.className} min-h-screen w-full bg-[#F6F3E4] flex flex-col justify-between py-6 sm:py-8 lg:py-0`}
     >
-      {/* Cabeçalho exclusivo para Mobile e Tablet (< lg) */}
-      <header className="lg:hidden w-full flex justify-center pt-8 pb-3 px-6">
+      {/* Cabeçalho para Mobile e Tablet (< lg) */}
+      <header className="lg:hidden w-full flex justify-center pb-4 px-6">
         <Link href="/">
           <Image
             src="/LOGO%20Stock.io.png"
@@ -167,21 +167,21 @@ export default function CadastroPage() {
             width={320}
             height={64}
             priority
-            className="h-auto w-[220px] sm:w-[280px] object-contain"
+            className="h-auto w-[200px] sm:w-[260px] object-contain hover:opacity-90 transition-opacity"
           />
         </Link>
       </header>
 
-      {/* Conteúdo Principal Centralizado */}
-      <div className="relative mx-auto flex-1 w-full max-w-[1440px] px-4 sm:px-8 lg:px-14 flex flex-col lg:flex-row items-center lg:items-end justify-center lg:justify-between gap-6 pb-0">
-        {/* Painel do Formulário de Cadastro */}
+      {/* Conteúdo Principal */}
+      <div className="relative mx-auto flex-1 w-full max-w-[1440px] px-4 sm:px-8 lg:px-12 xl:px-16 flex flex-col lg:flex-row items-center lg:items-end justify-between gap-8 pb-4 lg:pb-0">
+        {/* Painel do Formulário de Cadastro (Figma #12:200) */}
         <section
           aria-labelledby="cadastro-heading"
-          className="w-full max-w-[654px] rounded-t-[50px] sm:rounded-t-[80px] bg-[#171918] px-6 sm:px-12 xl:px-[75px] pt-8 sm:pt-14 pb-8 text-[#F6F3E4] shadow-2xl flex flex-col justify-center transition-all duration-300"
+          className="w-full max-w-[560px] xl:max-w-[654px] rounded-t-[50px] sm:rounded-t-[80px] rounded-b-[40px] lg:rounded-b-none bg-[#171918] px-6 sm:px-12 xl:px-[75px] pt-8 sm:pt-10 xl:pt-12 pb-8 sm:pb-10 xl:pb-12 text-[#F6F3E4] shadow-2xl flex flex-col justify-center transition-all my-auto lg:my-0"
         >
           <h1
             id="cadastro-heading"
-            className="text-center text-3xl sm:text-4xl xl:text-[42px] font-extrabold leading-none tracking-tight text-white"
+            className="text-center text-3xl sm:text-4xl xl:text-[44px] font-extrabold leading-none tracking-tight text-[#F6F3E4]"
           >
             CRIE SUA CONTA
           </h1>
@@ -190,7 +190,7 @@ export default function CadastroPage() {
           {errors.general && (
             <div
               role="alert"
-              className="mt-4 rounded-xl bg-red-500/15 border border-red-500/40 p-3.5 text-center text-sm font-medium text-red-300 animate-fadeIn"
+              className="mt-4 rounded-xl bg-red-500/15 border border-red-500/40 p-3 text-center text-sm font-medium text-red-300"
             >
               {errors.general}
             </div>
@@ -199,7 +199,7 @@ export default function CadastroPage() {
           {successMessage && (
             <div
               role="status"
-              className="mt-4 rounded-xl bg-emerald-500/15 border border-emerald-500/40 p-3.5 text-center text-sm font-medium text-emerald-300 animate-fadeIn"
+              className="mt-4 rounded-xl bg-emerald-500/15 border border-emerald-500/40 p-3 text-center text-sm font-medium text-emerald-300"
             >
               {successMessage}
             </div>
@@ -208,7 +208,7 @@ export default function CadastroPage() {
           <form
             onSubmit={handleSubmit}
             noValidate
-            className="mt-6 sm:mt-8 flex flex-col gap-3.5 xl:gap-[15px]"
+            className="mt-6 sm:mt-7 xl:mt-8 flex flex-col gap-3.5 xl:gap-[15px]"
           >
             {/* Campo Nome Completo */}
             <div>
@@ -220,7 +220,6 @@ export default function CadastroPage() {
                 placeholder="Nome Completo"
                 disabled={isLoading}
                 aria-label="Nome Completo"
-                aria-invalid={!!errors.name}
                 className={inputStyle}
               />
               {errors.name && (
@@ -240,7 +239,6 @@ export default function CadastroPage() {
                 placeholder="Username"
                 disabled={isLoading}
                 aria-label="Username"
-                aria-invalid={!!errors.username}
                 className={inputStyle}
               />
               {errors.username && (
@@ -259,8 +257,7 @@ export default function CadastroPage() {
                 onChange={handleChange}
                 placeholder="Email"
                 disabled={isLoading}
-                aria-label="Endereço de Email"
-                aria-invalid={!!errors.email}
+                aria-label="Email"
                 className={inputStyle}
               />
               {errors.email && (
@@ -270,7 +267,7 @@ export default function CadastroPage() {
               )}
             </div>
 
-            {/* Campo Senha com Toggle */}
+            {/* Campo Senha com Toggle Oficial iconamoon:eye-thin */}
             <div className="relative">
               <input
                 type={verSenha ? "text" : "password"}
@@ -280,7 +277,6 @@ export default function CadastroPage() {
                 placeholder="Senha"
                 disabled={isLoading}
                 aria-label="Senha"
-                aria-invalid={!!errors.password}
                 className={`${inputStyle} pr-14`}
               />
               <button
@@ -327,7 +323,7 @@ export default function CadastroPage() {
               )}
             </div>
 
-            {/* Campo Confirmar Senha com Toggle */}
+            {/* Campo Confirmar Senha */}
             <div className="relative">
               <input
                 type={verConfirmar ? "text" : "password"}
@@ -337,13 +333,12 @@ export default function CadastroPage() {
                 placeholder="Confirmar Senha"
                 disabled={isLoading}
                 aria-label="Confirmar Senha"
-                aria-invalid={!!errors.confirmPassword}
                 className={`${inputStyle} pr-14`}
               />
               <button
                 type="button"
                 onClick={() => setVerConfirmar(!verConfirmar)}
-                aria-label={verConfirmar ? "Ocultar senha" : "Ver senha"}
+                aria-label={verConfirmar ? "Ocultar confirmação de senha" : "Ver confirmação de senha"}
                 className="absolute right-4 top-1/2 -translate-y-1/2 cursor-pointer p-1 text-[#858585] hover:opacity-80 transition-opacity"
               >
                 <svg
@@ -384,11 +379,11 @@ export default function CadastroPage() {
               )}
             </div>
 
-            {/* Botão de Envio */}
+            {/* Botão de Envio (Figma #12:260) */}
             <button
               type="submit"
               disabled={isLoading}
-              className="mt-3 xl:mt-4 h-[52px] w-full rounded-full bg-[#6A38F3] text-2xl font-semibold tracking-wide text-white transition-all hover:bg-[#582ad6] active:scale-[0.99] disabled:opacity-60 disabled:cursor-not-allowed flex items-center justify-center cursor-pointer shadow-lg shadow-[#6A38F3]/30"
+              className="mt-3 sm:mt-4 h-[52px] w-full rounded-full bg-[#6A38F3] text-2xl font-semibold tracking-wide text-white transition-all hover:bg-[#582ad6] active:scale-[0.99] disabled:opacity-60 disabled:cursor-not-allowed flex items-center justify-center cursor-pointer shadow-lg shadow-[#6A38F3]/30"
             >
               {isLoading ? (
                 <div className="flex items-center gap-2">
@@ -420,8 +415,8 @@ export default function CadastroPage() {
             </button>
           </form>
 
-          {/* Link para Login */}
-          <p className="mt-5 xl:mt-7 text-center text-xl sm:text-2xl font-light text-white">
+          {/* Link para Login (Figma #12:263) */}
+          <p className="mt-5 sm:mt-6 text-center text-xl sm:text-2xl font-light text-white">
             Já possui uma conta?{" "}
             <Link
               href="/login"
@@ -432,7 +427,7 @@ export default function CadastroPage() {
           </p>
         </section>
 
-        {/* Lado Direito / Logo e Mascote (Desktop) */}
+        {/* Lado Direito / Logo e Mascote (Desktop - Figma #12:267 e #33:35) */}
         <section className="hidden lg:flex flex-col items-center justify-between self-stretch pt-6 xl:pt-10 w-full max-w-[440px] xl:max-w-[500px]">
           {/* Logo Stock.io */}
           <div className="w-full flex justify-center px-4">
@@ -456,7 +451,7 @@ export default function CadastroPage() {
               width={497}
               height={799}
               priority
-              className="h-auto max-h-[62vh] xl:max-h-[68vh] 2xl:max-h-[74vh] w-[320px] xl:w-[440px] object-contain object-bottom select-none pointer-events-none"
+              className="h-auto max-h-[58vh] xl:max-h-[66vh] 2xl:max-h-[72vh] w-[300px] xl:w-[420px] object-contain object-bottom select-none pointer-events-none"
             />
           </div>
         </section>

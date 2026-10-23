@@ -20,8 +20,8 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="pt-BR" className={`${leagueSpartan.variable} h-full antialiased`}>
-      <body className="min-h-full flex flex-col bg-[#F6F3E4] text-[#171918]">
+    <html lang="pt-BR" className={`${leagueSpartan.variable} antialiased`}>
+      <body className="min-h-screen flex flex-col bg-[#F6F3E4] text-[#171918]">
         {children}
       </body>
     </html>
