@@ -4,7 +4,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { League_Spartan } from "next/font/google";
-import { useState, type FormEvent } from "react";
+import { useState, useEffect, type FormEvent } from "react";
 
 const leagueSpartan = League_Spartan({
   subsets: ["latin"],
@@ -27,6 +27,33 @@ export default function LoginPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [errors, setErrors] = useState<LoginErrors>({});
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
+
+  // Exibe mensagem de boas-vindas caso venha do cadastro (?cadastrado=true)
+  useEffect(() => {
+    try {
+      const params = new URLSearchParams(window.location.search);
+      if (params.get("cadastrado") === "true") {
+        // eslint-disable-next-line react-hooks/set-state-in-effect
+        setSuccessMessage("Conta criada com sucesso! Faça seu login para continuar.");
+        const timer = setTimeout(() => {
+          setSuccessMessage(null);
+        }, 5000);
+        return () => clearTimeout(timer);
+      }
+    } catch {
+      // noop
+    }
+  }, []);
+
+  // Auto-dismiss do erro geral apos 5 segundos
+  useEffect(() => {
+    if (errors.general) {
+      const timer = setTimeout(() => {
+        setErrors((prev) => ({ ...prev, general: undefined }));
+      }, 5000);
+      return () => clearTimeout(timer);
+    }
+  }, [errors.general]);
 
   const validate = (): boolean => {
     const newErrors: LoginErrors = {};
@@ -105,8 +132,8 @@ export default function LoginPage() {
 
       setSuccessMessage("Login efetuado com sucesso! Redirecionando...");
       setTimeout(() => {
-        router.push("/");
-      }, 1200);
+        router.replace("/");
+      }, 1000);
     } catch {
       setErrors({
         general:
@@ -185,18 +212,34 @@ export default function LoginPage() {
           {errors.general && (
             <div
               role="alert"
-              className="mt-4 rounded-xl bg-red-500/15 border border-red-500/40 p-3 text-center text-sm font-medium text-red-300"
+              className="mt-4 flex items-center justify-between rounded-xl bg-red-500/15 border border-red-500/40 px-4 py-2.5 text-sm font-medium text-red-300"
             >
-              {errors.general}
+              <span>{errors.general}</span>
+              <button
+                type="button"
+                onClick={() => setErrors((prev) => ({ ...prev, general: undefined }))}
+                aria-label="Fechar aviso"
+                className="ml-2 text-red-300/80 hover:text-white transition-colors cursor-pointer text-xs"
+              >
+                ✕
+              </button>
             </div>
           )}
 
           {successMessage && (
             <div
               role="status"
-              className="mt-4 rounded-xl bg-emerald-500/15 border border-emerald-500/40 p-3 text-center text-sm font-medium text-emerald-300"
+              className="mt-4 flex items-center justify-between rounded-xl bg-emerald-500/15 border border-emerald-500/40 px-4 py-2.5 text-sm font-medium text-emerald-300"
             >
-              {successMessage}
+              <span>{successMessage}</span>
+              <button
+                type="button"
+                onClick={() => setSuccessMessage(null)}
+                aria-label="Fechar mensagem"
+                className="ml-2 text-emerald-300/80 hover:text-white transition-colors cursor-pointer text-xs"
+              >
+                ✕
+              </button>
             </div>
           )}
 
