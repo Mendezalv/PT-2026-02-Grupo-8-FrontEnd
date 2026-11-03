@@ -4,6 +4,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { League_Spartan } from "next/font/google";
 import { useState, useEffect } from "react";
+import Navbar, { UserProfile } from "@/components/Navbar";
 
 const leagueSpartan = League_Spartan({
   subsets: ["latin"],
@@ -11,11 +12,6 @@ const leagueSpartan = League_Spartan({
   display: "swap",
 });
 
-interface UserProfile {
-  name?: string;
-  email?: string;
-  username?: string;
-}
 
 export default function HomePage() {
   const [user, setUser] = useState<UserProfile | null>(null);
@@ -122,99 +118,8 @@ export default function HomePage() {
     >
       {/* 1. Header Superior & Hero Banner Preto (Figma Home #21:498) */}
       <section className="w-full bg-[#000000] text-white">
-        {/* Navbar */}
-        <header className="mx-auto flex h-20 sm:h-24 max-w-[1440px] items-center justify-between px-4 sm:px-8 lg:px-14">
-          {/* Logo Stock.io */}
-          <Link href="/" className="flex items-center">
-            <Image
-              src="/LOGO%20Stock.io.png"
-              alt="Stock.io"
-              width={260}
-              height={55}
-              priority
-              className="h-auto w-[150px] sm:w-[190px] object-contain invert brightness-0 hover:opacity-90 transition-opacity"
-            />
-          </Link>
-
-          {/* Ações da Navbar fiéis ao Figma (Deslogado #21:498 vs Logado #346:3063) */}
-          <div className="flex items-center gap-4 sm:gap-6">
-            {user ? (
-              <div className="flex items-center gap-5 sm:gap-7">
-                {/* Ícones de Sacola, Loja, Perfil e Sair (Figma Home Logado #346:3063) */}
-                <button
-                  type="button"
-                  title="Produtos"
-                  aria-label="Produtos"
-                  className="hover:scale-110 transition-transform cursor-pointer"
-                >
-                  <Image
-                    src="/icons/icon_bag.svg"
-                    alt="Produtos"
-                    width={26}
-                    height={26}
-                    className="invert brightness-0"
-                  />
-                </button>
-                <button
-                  type="button"
-                  title="Lojas"
-                  aria-label="Lojas"
-                  className="hover:scale-110 transition-transform cursor-pointer"
-                >
-                  <Image
-                    src="/icons/icon_store.svg"
-                    alt="Lojas"
-                    width={26}
-                    height={26}
-                    className="invert brightness-0"
-                  />
-                </button>
-                <div className="flex items-center gap-2">
-                  <Image
-                    src="/icons/icon_person.svg"
-                    alt="Perfil"
-                    width={26}
-                    height={26}
-                    className="invert brightness-0"
-                  />
-                  <span className="hidden sm:inline-block text-sm font-semibold text-white">
-                    {user.name || user.username || "Usuário"}
-                  </span>
-                </div>
-                <button
-                  type="button"
-                  onClick={handleLogout}
-                  title="Sair"
-                  aria-label="Sair"
-                  className="hover:scale-110 transition-transform cursor-pointer p-1"
-                >
-                  <Image
-                    src="/icons/icon_exit.svg"
-                    alt="Sair"
-                    width={24}
-                    height={24}
-                    className="invert brightness-0"
-                  />
-                </button>
-              </div>
-            ) : (
-              <div className="flex items-center gap-5 sm:gap-7">
-                <Link
-                  href="/login"
-                  className="text-base sm:text-[17.5px] font-semibold uppercase tracking-wider text-white hover:text-[#6A38F3] transition-colors"
-                >
-                  LOGIN
-                </Link>
-                <Link
-                  href="/cadastro"
-                  className="flex h-9 sm:h-[34px] items-center justify-center rounded-full bg-[#6A38F3] px-6 text-sm sm:text-[16px] font-semibold tracking-wide text-white shadow-md shadow-[#6A38F3]/30 hover:bg-[#582ad6] active:scale-95 transition-all"
-                >
-                  CADASTRE-SE
-                </Link>
-              </div>
-            )}
-          </div>
-        </header>
+        {/* Navbar Modularizada (Figma Component Set #30:19) */}
+        <Navbar user={user} onLogout={handleLogout} />
 
         {/* Hero Banner Content */}
         <div className="mx-auto flex max-w-[1440px] flex-col lg:flex-row items-center justify-between px-4 sm:px-8 lg:px-14 pt-4 pb-0 overflow-hidden">
