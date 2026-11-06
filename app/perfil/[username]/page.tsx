@@ -5,10 +5,10 @@ import Image from "next/image";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import Navbar from "@/components/Navbar";
-import { getStoredUser, clearSession, AUTH_KEYS } from "@/lib/auth";
+import { getStoredUser, clearSession } from "@/lib/auth";
 import { UserProfile } from "@/types/auth";
 
-const API = "http://localhost:3000";
+const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000";
 
 interface Usuario {
   id: number;
@@ -42,7 +42,11 @@ function PerfilConteudo() {
   const [erro, setErro] = useState<string | null>(null);
 
   useEffect(() => {
-    setLogado(getStoredUser());
+    const stored = getStoredUser();
+    if (stored) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      setLogado(stored);
+    }
   }, []);
 
   useEffect(() => {
@@ -126,14 +130,28 @@ function PerfilConteudo() {
           aria-label="Voltar"
           className="absolute left-2 top-[-90px] text-white hover:opacity-80 sm:left-6 lg:left-10 lg:top-[-110px]"
         >
-          <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+          <svg
+            width="40"
+            height="40"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2.5"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          >
             <path d="M15 18l-6-6 6-6" />
           </svg>
         </button>
 
         <div className="relative -mt-[110px] h-[170px] w-[170px] overflow-hidden rounded-full border-4 border-[#F6F3E4] bg-[#D9D9D9] lg:-mt-[130px] lg:h-[230px] lg:w-[230px]">
           {usuario.fotoPerfilUrl ? (
-            <Image src={usuario.fotoPerfilUrl} alt={usuario.name} fill className="object-cover" />
+            <Image
+              src={usuario.fotoPerfilUrl}
+              alt={usuario.name}
+              fill
+              className="object-cover"
+            />
           ) : (
             <div className="flex h-full w-full items-center justify-center text-5xl font-bold text-[#8A8A8A]">
               {usuario.name?.charAt(0).toUpperCase()}
@@ -159,7 +177,14 @@ function PerfilConteudo() {
         </p>
 
         <p className="mt-1 flex items-center gap-2 text-lg text-[#6B6B6B] lg:text-2xl">
-          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
+          <svg
+            width="22"
+            height="22"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="1.8"
+          >
             <rect x="2" y="4" width="20" height="16" rx="2" />
             <path d="m2 7 10 6 10-6" />
           </svg>
@@ -168,7 +193,10 @@ function PerfilConteudo() {
 
         <div className="mt-12 flex items-end justify-between">
           <h2 className="text-[28px] font-bold lg:text-[32px]">Produtos</h2>
-          <Link href="#" className="text-sm text-[#6A38F3] hover:underline lg:text-base">
+          <Link
+            href="#"
+            className="text-sm text-[#6A38F3] hover:underline lg:text-base"
+          >
             ver mais
           </Link>
         </div>
