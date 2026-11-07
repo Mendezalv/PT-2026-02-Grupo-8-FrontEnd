@@ -2,41 +2,25 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { League_Spartan } from "next/font/google";
 import { useState, useEffect } from "react";
-import Navbar, { UserProfile } from "@/components/Navbar";
-
-const leagueSpartan = League_Spartan({
-  subsets: ["latin"],
-  weight: ["300", "400", "500", "600", "700", "800"],
-  display: "swap",
-});
-
+import Navbar from "@/components/Navbar";
+import { UserProfile } from "@/types/auth";
+import { getStoredUser, clearSession } from "@/lib/auth";
 
 export default function HomePage() {
   const [user, setUser] = useState<UserProfile | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
 
   useEffect(() => {
-    try {
-      const token = localStorage.getItem("stockio_token");
-      const storedUser = localStorage.getItem("stockio_user");
-      if (token && storedUser) {
-        // eslint-disable-next-line react-hooks/set-state-in-effect
-        setUser(JSON.parse(storedUser));
-      }
-    } catch {
-      // Ignora erro de acesso a localStorage
+    const storedUser = getStoredUser();
+    if (storedUser) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      setUser(storedUser);
     }
   }, []);
 
   const handleLogout = () => {
-    try {
-      localStorage.removeItem("stockio_token");
-      localStorage.removeItem("stockio_user");
-    } catch {
-      // noop
-    }
+    clearSession();
     setUser(null);
   };
 
@@ -54,13 +38,13 @@ export default function HomePage() {
 
   // Lojas Parceiras do Carrossel do Figma (#75:3004)
   const lojasParceiras = [
-    { nome: "CJR", segmento: "mercado", cor: "#0A2540" },
-    { nome: "Rare Beauty", segmento: "beleza", cor: "#FDF4EE" },
-    { nome: "The Croc Brew", segmento: "mercado", cor: "#EBF1FF" },
-    { nome: "Mini Reno", segmento: "casa", cor: "#262626" },
-    { nome: "amoca", segmento: "moda", cor: "#FFFFFF" },
-    { nome: "Repiit", segmento: "eletrônicos", cor: "#FFFFFF" },
-    { nome: "Creamy", segmento: "beleza", cor: "#0055B8" },
+    { nome: "CJR", segmento: "mercado", cor: "#0A2540", dark: true },
+    { nome: "Rare Beauty", segmento: "beleza", cor: "#FDF4EE", dark: false },
+    { nome: "The Croc Brew", segmento: "mercado", cor: "#EBF1FF", dark: false },
+    { nome: "Mini Reno", segmento: "casa", cor: "#262626", dark: true },
+    { nome: "amoca", segmento: "moda", cor: "#FFFFFF", dark: false },
+    { nome: "Repiit", segmento: "eletrônicos", cor: "#FFFFFF", dark: false },
+    { nome: "Creamy", segmento: "beleza", cor: "#0055B8", dark: true },
   ];
 
   // Vitrine de Produtos Oficiais do Figma
@@ -113,9 +97,7 @@ export default function HomePage() {
   ];
 
   return (
-    <div
-      className={`${leagueSpartan.className} min-h-screen bg-[#F6F3E4] text-[#171918] flex flex-col justify-between`}
-    >
+    <div className="min-h-screen bg-[#F6F3E4] text-[#171918] flex flex-col justify-between">
       {/* 1. Header Superior & Hero Banner Preto (Figma Home #21:498) */}
       <section className="w-full bg-[#000000] text-white">
         {/* Navbar Modularizada (Figma Component Set #30:19) */}
@@ -225,9 +207,7 @@ export default function HomePage() {
               >
                 <span
                   className={`text-xs sm:text-sm font-bold ${
-                    loja.cor === "#0A2540" || loja.cor === "#262626" || loja.cor === "#0055B8"
-                      ? "text-white"
-                      : "text-[#171918]"
+                    loja.dark ? "text-white" : "text-[#171918]"
                   }`}
                 >
                   {loja.nome}

@@ -3,14 +3,8 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { League_Spartan } from "next/font/google";
 import { useState, useEffect, type FormEvent } from "react";
-
-const leagueSpartan = League_Spartan({
-  subsets: ["latin"],
-  weight: ["300", "400", "500", "600", "700", "800"],
-  display: "swap",
-});
+import { saveSession } from "@/lib/auth";
 
 interface LoginErrors {
   email?: string;
@@ -115,19 +109,7 @@ export default function LoginPage() {
       }
 
       if (data?.access_token) {
-        try {
-          localStorage.setItem("stockio_token", data.access_token);
-          if (data.user) {
-            localStorage.setItem("stockio_user", JSON.stringify(data.user));
-          } else {
-            localStorage.setItem(
-              "stockio_user",
-              JSON.stringify({ email: email.trim() }),
-            );
-          }
-        } catch {
-          // Fallback caso localStorage esteja bloqueado
-        }
+        saveSession(data.access_token, data.user || { email: email.trim() });
       }
 
       setSuccessMessage("Login efetuado com sucesso! Redirecionando...");
@@ -148,9 +130,7 @@ export default function LoginPage() {
     "h-12 w-full rounded-full bg-[#F6F3E4] px-[34px] text-xl sm:text-2xl font-light text-[#171918] outline-none placeholder:text-[#858585] transition-all focus:ring-2 focus:ring-[#6A38F3] focus:ring-offset-2 focus:ring-offset-[#171918]";
 
   return (
-    <main
-      className={`${leagueSpartan.className} min-h-screen w-full bg-[#F6F3E4] flex flex-col justify-between py-6 sm:py-8 lg:py-0`}
-    >
+    <main className="min-h-screen w-full bg-[#F6F3E4] flex flex-col justify-between py-6 sm:py-8 lg:py-0">
       {/* Cabeçalho para Mobile e Tablet (< lg) */}
       <header className="lg:hidden w-full flex justify-center pb-4 px-6">
         <Link href="/">
